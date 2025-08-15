@@ -1,19 +1,30 @@
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-    page.goto("https://l-randomizer.vercel.app")
+async def get_build_async(role: str) -> bytes:
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context(locale='es-ES')
+        page = await context.new_page()
+        await page.goto("https://l-randomizer.vercel.app")
 
-    # Click the generate button
-    page.click("text=Randomize")
+        target_div = page.locator(
+            '.flex.flex-wrap.w-9\\/12.max-w-\\[1200px\\].justify-evenly.md\\:max-lg\\:justify-center'
+        )    
+        role = role[0].upper() + role[1:]
+        role_selected = page.get_by_alt_text(f"Role {role}")
+        
+        await page.get_by_placeholder("Select role").fill(role)
+        await page.get_by_role('button', name='Randomize').click()
 
-    # Wait for the build to appear
-    page.wait_for_selector(".result-wrapper")
+        old_alt = await role_selected.get_attribute("alt")
+        await page.wait_for_function(
+            "(el, oldAlt) => el !== oldAlt",
+            arg=[role_selected, old_alt]
+        )
 
-    # Get the generated text
-    build_html = page.inner_text(".result-wrapper")
+        build = await target_div.screenshot()
 
-    print("Random Build:\n", build_html)
+        await context.close()
+        await browser.close()
 
-    browser.close()
+        return build
