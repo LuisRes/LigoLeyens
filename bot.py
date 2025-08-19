@@ -8,6 +8,8 @@ import io
 #END GRACEFULLY IN CASE OF SUDDEN CLOSE
 #FIX IMAGE LOADING IN CASE OF LATENCY ERROR
 #CHECK FOR POSSIBLE LOCALE FIXES
+
+#TODO DONE
 #ADD ABREVIATIONS FOR ROLES
 
 TOKEN = os.getenv("LIGOLEYENS_TOKEN")
@@ -19,11 +21,27 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-roles = ['top', 'jungle', 'mid', 'adc', 'support']
+roles = {
+    "top": "top",
+    "jungle": "jungle",
+    "jg": "jungle",
+    "jungla": "jungle",
+    "mid": "mid",
+    "adc": "adc",
+    "bot": "adc",
+    "support": "support",
+    "sup": "support",
+    "soporte": "support"
+}
 
 @bot.event
 async def on_ready():
     print('Logged in as {0}'.format(bot.user))
+
+@bot.command()
+async def lol(ctx):
+    await ctx.send("Builds culeras de LOL")
+    return
     
 @bot.command()
 async def build(ctx, role: str = None):
@@ -37,7 +55,7 @@ async def build(ctx, role: str = None):
         return
 
     try:
-        image_bytes = await randomizer.get_build_async(role)
+        image_bytes = await randomizer.get_build_async(roles[role])
     except Exception as e:
         await ctx.send(f"Error generating build: {e}")
         return
