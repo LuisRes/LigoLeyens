@@ -5,12 +5,9 @@ from discord.ext import commands
 import io
 
 #TODO
-#END GRACEFULLY IN CASE OF SUDDEN CLOSE
 #FIX IMAGE LOADING IN CASE OF LATENCY ERROR
 #CHECK FOR POSSIBLE LOCALE FIXES
-
-#TODO DONE
-#ADD ABREVIATIONS FOR ROLES
+#OPTIMIZE FOR FASTER RUN TIME
 
 TOKEN = os.getenv("LIGOLEYENS_TOKEN")
 
@@ -44,7 +41,7 @@ async def lol(ctx):
     return
     
 @bot.command()
-async def build(ctx, role: str = None):
+async def build(ctx, role: str = None, champ: str = None):
     role = role.lower()
 
     if role is None:
@@ -53,9 +50,12 @@ async def build(ctx, role: str = None):
     elif role not in roles:
         await ctx.send("Rol no valido, Roles validos: top, jungle, mid, adc, support")
         return
+    
+    if champ is None:
+        champ = ""
 
     try:
-        image_bytes = await randomizer.get_build_async(roles[role])
+        image_bytes = await randomizer.get_build_async(roles[role], champ)
     except Exception as e:
         await ctx.send(f"Error generating build: {e}")
         return
@@ -63,5 +63,6 @@ async def build(ctx, role: str = None):
     # Send screenshot as a Discord file
     await ctx.send(file=discord.File(io.BytesIO(image_bytes), filename="build.png"))
 
-print(repr(TOKEN))
 bot.run(TOKEN)
+
+print("Bot shut down")
